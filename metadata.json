@@ -1,0 +1,5 @@
+{
+  "name": "WordPress Link Auditor Pro",
+  "description": "An advanced tool to audit, manage, and optimize links across all your WordPress posts. It provides a comprehensive dashboard to view internal/external links, edit attributes like 'nofollow' and 'target', check for broken links, and leverage AI for in-depth analysis.",
+  "requestFramePermissions": []
+}
