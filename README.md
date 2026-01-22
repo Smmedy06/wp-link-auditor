@@ -277,7 +277,7 @@ WP Link Auditor follows WordPress security best practices:
 This plugin is licensed under the **GPL v2 or later**.
 
 ```
-Copyright (C) 2024 Andrew Murray
+Copyright (C) 2025 Smmedy06
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
