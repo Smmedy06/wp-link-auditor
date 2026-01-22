@@ -292,7 +292,7 @@ GNU General Public License for more details.
 
 ## Credits
 
-**Developed by** [Andrew Murray](https://github.com/andrewmurray)
+**Developed by** [Smmedy06](https://github.com/Smmedy06)
 
 ---
 
