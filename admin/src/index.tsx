@@ -1,9 +1,9 @@
-
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
+import './index.css';
 
-const rootElement = document.getElementById('root');
+const rootElement = document.getElementById('wp-link-auditor-root');
 if (!rootElement) {
   throw new Error("Could not find root element to mount to");
 }
@@ -14,3 +14,4 @@ root.render(
     <App />
   </React.StrictMode>
 );
+

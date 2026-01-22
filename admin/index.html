@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WP Link Auditor - Development Preview</title>
+    <style>
+      /* WordPress Admin Base Styles */
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+        background: #f0f0f1;
+        margin: 0;
+        padding: 20px;
+      }
+      .wrap {
+        max-width: 1200px;
+        margin: 0 auto;
+        background: #fff;
+        padding: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="wp-link-auditor-root"></div>
+    <script>
+      // Mock WordPress data for development
+      window.wpLinkAuditor = {
+        apiUrl: 'http://localhost:3000/api/', // Will need to be mocked
+        nonce: 'dev-nonce',
+        adminUrl: 'http://localhost/wp-admin/',
+        siteUrl: 'http://localhost',
+        currentUser: {
+          id: 1,
+          canEditPosts: true,
+        },
+      };
+    </script>
+    <script type="module" src="/src/index.tsx"></script>
+  </body>
+</html>
+
