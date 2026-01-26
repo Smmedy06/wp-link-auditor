@@ -59,6 +59,244 @@ A powerful WordPress plugin to audit, analyze, and bulk update links across your
 
 > **Note**: The admin interface must be built before use. See [Development](#development) section for detailed build instructions.
 
+### Troubleshooting Upload Issues
+
+If you encounter errors when uploading the plugin to different WordPress sites, this is typically due to server configuration differences. Here are the most common issues and solutions:
+
+#### Common Upload Errors
+
+**1. "The link you followed has expired" Error**
+- **Cause**: This misleading error usually indicates your plugin ZIP file exceeds the server's upload size limit
+- **Solution**: 
+  - Check your upload limit: Go to **Media > Add New** in WordPress to see "Maximum upload file size"
+  - If your plugin ZIP exceeds this limit, you need to increase server limits (see below)
+  - Alternatively, use FTP to upload the plugin manually
+
+**2. "PCLZIP_ERR_BAD_FORMAT" or "Corrupted ZIP File" Error**
+- **Cause**: ZIP file structure is incorrect or file is corrupted
+- **Solution**:
+  - Ensure the ZIP contains a single folder named `wp-link-auditor` (not files at the root)
+  - Re-create the ZIP file ensuring proper structure
+  - Verify the ZIP file isn't corrupted by testing extraction locally
+
+**3. "Destination folder already exists" Error**
+- **Cause**: Plugin folder already exists in `/wp-content/plugins/` from a previous installation
+- **Solution**:
+  - Access your site via FTP or File Manager
+  - Navigate to `/wp-content/plugins/`
+  - Delete the existing `wp-link-auditor` folder
+  - Retry the installation
+
+**4. "Memory exhausted" or "Fatal error: Allowed memory size"**
+- **Cause**: PHP memory limit is too low
+- **Solution**: Increase PHP memory limit (see Server Configuration below)
+
+**5. "Maximum execution time exceeded"**
+- **Cause**: Server timeout limit is too low for large plugin uploads
+- **Solution**: Increase execution time limit (see Server Configuration below)
+
+**6. "There has been a critical error on this website" (During Installation)**
+- **Cause**: This is a PHP fatal error occurring during plugin installation/activation. Common causes:
+  - Missing required files in the ZIP package
+  - PHP syntax error in one of the plugin files
+  - Incorrect ZIP structure causing file path issues
+  - PHP version incompatibility (requires PHP 7.4+)
+  - Missing WordPress core functions or constants
+- **Solution**:
+  1. **Check WordPress debug log**: Enable `WP_DEBUG` in `wp-config.php`:
+     ```php
+     define('WP_DEBUG', true);
+     define('WP_DEBUG_LOG', true);
+     define('WP_DEBUG_DISPLAY', false);
+     ```
+     Then check `/wp-content/debug.log` for the specific error message.
+  
+  2. **Verify ZIP structure**: Ensure the ZIP contains all files in the correct structure (see "Creating a Proper Distribution ZIP" below)
+  
+  3. **Check PHP version**: Ensure the server is running PHP 7.4 or higher
+  
+  4. **Verify all files are included**: The following files MUST be in the ZIP:
+     - `wp-link-auditor.php` (main plugin file)
+     - `includes/class-activator.php`
+     - `includes/class-deactivator.php`
+     - `includes/class-wp-link-auditor.php`
+     - `includes/class-loader.php`
+     - `includes/class-i18n.php`
+     - `includes/class-admin.php`
+     - `includes/class-api.php`
+     - `includes/class-link-checker.php`
+     - `includes/class-seo-integration.php`
+  
+  5. **Try manual installation**: Use FTP to upload the plugin folder directly (see Alternative Installation Methods)
+  
+  6. **Check for plugin conflicts**: Temporarily deactivate all other plugins and try installing again
+
+#### Server Configuration Fixes
+
+Different hosting providers have different default limits. You may need to adjust these settings:
+
+**Option 1: Via php.ini (if you have access)**
+```ini
+upload_max_filesize = 128M
+post_max_size = 128M
+memory_limit = 256M
+max_execution_time = 300
+max_input_time = 300
+```
+
+**Option 2: Via wp-config.php**
+Add these lines to your `wp-config.php` file (before "That's all, stop editing!"):
+```php
+define('WP_MEMORY_LIMIT', '256M');
+define('WP_MAX_MEMORY_LIMIT', '512M');
+@ini_set('upload_max_filesize', '128M');
+@ini_set('post_max_size', '128M');
+@ini_set('max_execution_time', '300');
+```
+
+**Option 3: Via .htaccess (for Apache servers)**
+Add these lines to your `.htaccess` file:
+```apache
+php_value upload_max_filesize 128M
+php_value post_max_size 128M
+php_value memory_limit 256M
+php_value max_execution_time 300
+php_value max_input_time 300
+```
+
+**Option 4: Contact Your Hosting Provider**
+If you don't have access to server configuration files, contact your hosting provider and ask them to:
+- Increase `upload_max_filesize` to at least 128M
+- Increase `post_max_size` to at least 128M
+- Increase `memory_limit` to at least 256M
+- Increase `max_execution_time` to at least 300 seconds
+
+#### Alternative Installation Methods
+
+If dashboard upload continues to fail:
+
+**Method 1: FTP/File Manager Upload**
+1. Extract the plugin ZIP file on your computer
+2. Connect to your site via FTP or use your hosting File Manager
+3. Navigate to `/wp-content/plugins/`
+4. Upload the entire `wp-link-auditor` folder
+5. Activate the plugin from WordPress admin
+
+**Method 2: Use "Upload Larger Plugins" Plugin**
+Install the [Upload Larger Plugins](https://wordpress.org/plugins/upload-larger-plugins/) plugin, which uploads files in chunks to bypass size restrictions.
+
+**Method 3: Reduce Plugin Size Before Upload**
+If your plugin includes `node_modules` or build artifacts:
+1. Remove `admin/node_modules/` folder (if present)
+2. Remove `admin/build/` folder (you can rebuild after installation)
+3. Re-create the ZIP file
+4. Upload and then build the admin interface after installation
+
+#### Why Different Sites Show Different Errors
+
+Different hosting providers and server configurations have varying default limits:
+- **Shared hosting**: Often has stricter limits (2-10MB uploads)
+- **VPS/Dedicated servers**: Usually more flexible limits
+- **Managed WordPress hosting**: May have optimized but still limited settings
+- **Local development**: Typically has higher limits
+
+The same plugin ZIP may work on one site but fail on another due to these server differences.
+
+#### Creating a Proper Distribution ZIP
+
+To minimize upload issues, create your distribution ZIP correctly:
+
+**Correct ZIP Structure:**
+```
+wp-link-auditor.zip
+??? wp-link-auditor/          ? Single folder with plugin name
+    ??? wp-link-auditor.php
+    ??? includes/
+    ??? admin/
+    ??? README.md
+```
+
+**Incorrect ZIP Structure (will cause errors):**
+```
+wp-link-auditor.zip
+??? wp-link-auditor.php       ? Files at root (WRONG!)
+??? includes/
+??? admin/
+```
+
+**Files to EXCLUDE from distribution ZIP:**
+- `admin/node_modules/` (can be rebuilt after installation)
+- `admin/build/` (can be rebuilt after installation)
+- `.git/` and `.gitignore`
+- Development files (`.vscode/`, `.idea/`, etc.)
+- `package-lock.json` (optional, but not needed for distribution)
+
+**Recommended ZIP Creation Process:**
+1. Copy the plugin folder to a temporary location
+2. Remove `admin/node_modules/` if it exists
+3. Remove `admin/build/` if it exists (users will build it)
+4. Create a ZIP file containing only the `wp-link-auditor` folder
+5. Test the ZIP by extracting it to verify structure
+
+**Using Command Line (Linux/Mac):**
+```bash
+cd /path/to/parent/directory
+zip -r wp-link-auditor.zip wp-link-auditor/ -x "*/node_modules/*" "*/build/*" "*/.git/*"
+```
+
+**Using Command Line (Windows PowerShell):**
+```powershell
+Compress-Archive -Path wp-link-auditor -DestinationPath wp-link-auditor.zip
+```
+
+#### Diagnostic Steps for Critical Errors
+
+If you encounter a critical error during installation, follow these steps to identify the exact issue:
+
+**Step 1: Enable WordPress Debug Mode**
+Add these lines to your `wp-config.php` file (before "That's all, stop editing!"):
+```php
+define('WP_DEBUG', true);
+define('WP_DEBUG_LOG', true);
+define('WP_DEBUG_DISPLAY', false);
+@ini_set('display_errors', 0);
+```
+
+**Step 2: Check the Error Log**
+After attempting to install the plugin, check the following locations for error messages:
+- `/wp-content/debug.log` (WordPress debug log)
+- Your hosting control panel's error log
+- Your site admin email (WordPress sends error details there)
+
+**Step 3: Common Error Messages and Fixes**
+
+| Error Message | Likely Cause | Solution |
+|--------------|--------------|----------|
+| `Class 'WP_Link_Auditor_Activator' not found` | Missing `class-activator.php` file | Verify all files are in the ZIP |
+| `Call to undefined function` | Missing WordPress core file | Update WordPress to 5.8+ |
+| `Parse error: syntax error` | PHP version too old or syntax error | Update PHP to 7.4+ or check file syntax |
+| `Fatal error: Allowed memory size` | PHP memory limit too low | Increase memory_limit (see Server Configuration) |
+| `file_exists(): open_basedir restriction` | Server security restrictions | Contact hosting provider |
+
+**Step 4: Verify File Integrity**
+1. Extract the ZIP file locally
+2. Verify all files listed in "Verification Checklist" are present
+3. Check file sizes (empty files indicate corruption)
+4. Re-create the ZIP if any files are missing or corrupted
+
+#### Verification Checklist
+
+Before reporting an issue, verify:
+- [ ] ZIP file structure is correct (single `wp-link-auditor` folder inside)
+- [ ] ZIP file size is reasonable (check if it includes unnecessary files)
+- [ ] Server upload limits are sufficient (check via Media > Add New)
+- [ ] No existing plugin folder conflicts
+- [ ] File permissions are correct (755 for folders, 644 for files)
+- [ ] PHP version meets requirements (7.4+)
+- [ ] WordPress version meets requirements (5.8+)
+- [ ] All required plugin files are present in the ZIP
+- [ ] Debug log has been checked for specific error messages
+
 ## Development
 
 ### Prerequisites
@@ -109,31 +347,31 @@ A powerful WordPress plugin to audit, analyze, and bulk update links across your
 
 ```
 wp-link-auditor/
-├── wp-link-auditor.php              # Main plugin file
-├── includes/                         # PHP classes
-│   ├── class-wp-link-auditor.php    # Core plugin class
-│   ├── class-admin.php               # Admin interface handler
-│   ├── class-api.php                 # REST API endpoints
-│   ├── class-link-checker.php       # Link status verification
-│   ├── class-seo-integration.php    # SEO plugin integration
-│   ├── class-activator.php          # Plugin activation
-│   ├── class-deactivator.php        # Plugin deactivation
-│   ├── class-i18n.php               # Internationalization
-│   └── class-loader.php             # Autoloader
-├── admin/                            # React admin interface
-│   ├── src/
-│   │   ├── components/              # React components
-│   │   ├── services/                # API service layer
-│   │   ├── utils/                   # Utility functions
-│   │   ├── types.ts                 # TypeScript definitions
-│   │   ├── index.tsx                # Entry point
-│   │   └── index.css                # Styles
-│   ├── build/                       # Built files (generated)
-│   ├── package.json
-│   ├── vite.config.ts
-│   ├── tailwind.config.js
-│   └── tsconfig.json
-└── README.md
+??? wp-link-auditor.php              # Main plugin file
+??? includes/                         # PHP classes
+?   ??? class-wp-link-auditor.php    # Core plugin class
+?   ??? class-admin.php               # Admin interface handler
+?   ??? class-api.php                 # REST API endpoints
+?   ??? class-link-checker.php       # Link status verification
+?   ??? class-seo-integration.php    # SEO plugin integration
+?   ??? class-activator.php          # Plugin activation
+?   ??? class-deactivator.php        # Plugin deactivation
+?   ??? class-i18n.php               # Internationalization
+?   ??? class-loader.php             # Autoloader
+??? admin/                            # React admin interface
+?   ??? src/
+?   ?   ??? components/              # React components
+?   ?   ??? services/                # API service layer
+?   ?   ??? utils/                   # Utility functions
+?   ?   ??? types.ts                 # TypeScript definitions
+?   ?   ??? index.tsx                # Entry point
+?   ?   ??? index.css                # Styles
+?   ??? build/                       # Built files (generated)
+?   ??? package.json
+?   ??? vite.config.ts
+?   ??? tailwind.config.js
+?   ??? tsconfig.json
+??? README.md
 ```
 
 ## Usage

@@ -17,6 +17,26 @@ if ( ! defined( 'WPINC' ) ) {
 	die;
 }
 
+// Check if required files exist before proceeding
+$required_files = array(
+	WP_LINK_AUDITOR_PLUGIN_DIR . 'includes/class-activator.php',
+	WP_LINK_AUDITOR_PLUGIN_DIR . 'includes/class-deactivator.php',
+	WP_LINK_AUDITOR_PLUGIN_DIR . 'includes/class-wp-link-auditor.php',
+);
+
+foreach ( $required_files as $file ) {
+	if ( ! file_exists( $file ) ) {
+		wp_die(
+			sprintf(
+				__( 'WP Link Auditor: Required file missing: %s. Please reinstall the plugin.', 'wp-link-auditor' ),
+				esc_html( $file )
+			),
+			__( 'Plugin Installation Error', 'wp-link-auditor' ),
+			array( 'back_link' => true )
+		);
+	}
+}
+
 /**
  * Currently plugin version.
  */
